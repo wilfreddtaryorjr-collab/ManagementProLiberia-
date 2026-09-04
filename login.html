@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — Management Pro Liberia Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="portal.css">
+<style>
+  .login-tabs{
+    display:inline-flex;
+    background:var(--stone);
+    border-radius:24px;
+    padding:4px;
+    margin-bottom:30px;
+  }
+  .login-tabs button{
+    padding:8px 18px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+  }
+  .login-tabs button.active{ background:var(--navy); color:#fff; }
+  .login-ok{
+    display:none;
+    background:var(--verified-bg);
+    color:var(--verified);
+    border:1px solid rgba(75,122,99,0.25);
+    border-radius:4px;
+    padding:11px 14px;
+    font-size:13px;
+    margin-bottom:18px;
+  }
+  .login-ok.show{ display:block; }
+</style>
+</head>
+<body>
+
+<div class="login-screen">
+  <div class="login-visual">
+    <a href="../management-pro-liberia.html" class="brand">
+      <img src="mpl-logo.png" alt="Management Pro Liberia shield logo" onerror="this.style.display='none'">
+      <div class="brand-text">Management Pro Liberia<span>Your Eyes on the Ground</span></div>
+    </a>
+    <div>
+      <p class="quote" id="visual-quote">Presence, <span>on your behalf.</span></p>
+      <p class="quote-meta" id="visual-meta">CLIENT PORTAL · Field reports, GPS-verified</p>
+    </div>
+  </div>
+
+  <div class="login-form-side">
+    <div class="login-box">
+      <div class="login-tabs">
+        <button type="button" class="active" id="tab-client" onclick="setMode('client')">Client Login</button>
+        <button type="button" id="tab-team" onclick="setMode('team')">Team Login</button>
+      </div>
+
+      <div id="signin-panel">
+        <h1 id="form-title">Welcome back</h1>
+        <p class="sub" id="form-sub">Sign in to view your properties, reports, and inspection history.</p>
+
+        <div class="login-error" id="login-error">That email and password combination wasn't recognized.</div>
+
+        <form id="login-form" onsubmit="return handleLogin(event)">
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@example.com" required>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-block" id="submit-btn">Sign in to your dashboard</button>
+        </form>
+
+        <div class="login-demo" id="demo-box">
+          Demo access — <strong>rebecca@client.mpl</strong> / <strong>demo</strong>
+        </div>
+
+        <div class="login-switch" id="switch-copy">
+          Not a client yet? <a href="#" onclick="showSignup(); return false;" id="signup-link">Create an account</a>
+        </div>
+      </div>
+
+      <div id="signup-panel" style="display:none;">
+        <h1>Create your account</h1>
+        <p class="sub">Get set up so we can attach your properties to your dashboard.</p>
+
+        <div class="login-error" id="signup-error">That email already has an account — try signing in instead.</div>
+
+        <form id="signup-form" onsubmit="return handleSignup(event)">
+          <div class="field">
+            <label for="su-name">Full name</label>
+            <input type="text" id="su-name" placeholder="Your full name" required>
+          </div>
+          <div class="field">
+            <label for="su-email">Email</label>
+            <input type="email" id="su-email" placeholder="you@example.com" required>
+          </div>
+          <div class="field">
+            <label for="su-phone">Phone (optional)</label>
+            <input type="text" id="su-phone" placeholder="+1 (___) ___-____">
+          </div>
+          <div class="field">
+            <label for="su-password">Password</label>
+            <input type="password" id="su-password" placeholder="Choose a password" required>
+          </div>
+          <button type="submit" class="btn-block" id="signup-btn">Create account</button>
+        </form>
+
+        <div class="login-switch">
+          Already have an account? <a href="#" onclick="showSignin(); return false;">Sign in</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="portal-data.js"></script>
+<script>
+  let mode = 'client';
+
+  (async function init(){
+    const session = await getSession();
+    if(session){
+      window.location.href = session.role === 'team' ? 'team-dashboard.html' : 'client-dashboard.html';
+    }
+  })();
+
+  function setMode(next){
+    mode = next;
+    document.getElementById('tab-client').classList.toggle('active', mode === 'client');
+    document.getElementById('tab-team').classList.toggle('active', mode === 'team');
+    document.getElementById('login-error').classList.remove('show');
+    showSignin();
+
+    if(mode === 'client'){
+      document.getElementById('form-title').textContent = 'Welcome back';
+      document.getElementById('form-sub').textContent = 'Sign in to view your properties, reports, and inspection history.';
+      document.getElementById('visual-quote').innerHTML = 'Presence, <span>on your behalf.</span>';
+      document.getElementById('visual-meta').textContent = 'CLIENT PORTAL · Field reports, GPS-verified';
+      document.getElementById('demo-box').innerHTML = 'Demo access — <strong>rebecca@client.mpl</strong> / <strong>demo</strong>';
+      document.getElementById('switch-copy').style.display = 'block';
+    } else {
+      document.getElementById('form-title').textContent = 'Field team sign in';
+      document.getElementById('form-sub').textContent = 'Log inspections, update property status, and file GPS-verified reports.';
+      document.getElementById('visual-quote').innerHTML = 'Boots on the ground, <span>logged in real time.</span>';
+      document.getElementById('visual-meta').textContent = 'TEAM PORTAL · Property tracking dashboard';
+      document.getElementById('demo-box').innerHTML = 'Demo access — <strong>team@mpl.local</strong> / <strong>demo</strong>';
+      document.getElementById('switch-copy').style.display = 'none';
+    }
+  }
+
+  function showSignup(){
+    document.getElementById('signin-panel').style.display = 'none';
+    document.getElementById('signup-panel').style.display = 'block';
+  }
+  function showSignin(){
+    document.getElementById('signup-panel').style.display = 'none';
+    document.getElementById('signin-panel').style.display = 'block';
+  }
+
+  async function handleLogin(e){
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('submit-btn');
+    const errBox = document.getElementById('login-error');
+    errBox.classList.remove('show');
+    btn.textContent = 'Signing in…';
+
+    const result = await login(email, password);
+
+    if(!result.ok){
+      btn.textContent = 'Sign in to your dashboard';
+      errBox.textContent = result.error === 'no_user'
+        ? "We don't have an account under that email yet."
+        : "That password doesn't match our records.";
+      errBox.classList.add('show');
+      return false;
+    }
+
+    if(mode === 'team' && result.user.role !== 'team'){
+      btn.textContent = 'Sign in to your dashboard';
+      errBox.textContent = 'That account is a client login — use the Client Login tab instead.';
+      errBox.classList.add('show');
+      await clearSession();
+      return false;
+    }
+    if(mode === 'client' && result.user.role !== 'client'){
+      btn.textContent = 'Sign in to your dashboard';
+      errBox.textContent = 'That account is a team login — use the Team Login tab instead.';
+      errBox.classList.add('show');
+      await clearSession();
+      return false;
+    }
+
+    window.location.href = result.user.role === 'team' ? 'team-dashboard.html' : 'client-dashboard.html';
+    return false;
+  }
+
+  async function handleSignup(e){
+    e.preventDefault();
+    const name = document.getElementById('su-name').value.trim();
+    const email = document.getElementById('su-email').value.trim();
+    const phone = document.getElementById('su-phone').value.trim();
+    const password = document.getElementById('su-password').value;
+    const btn = document.getElementById('signup-btn');
+    const errBox = document.getElementById('signup-error');
+    errBox.classList.remove('show');
+    btn.textContent = 'Creating account…';
+
+    const result = await signupClient({ name, email, password, phone });
+
+    if(!result.ok){
+      btn.textContent = 'Create account';
+      errBox.classList.add('show');
+      return false;
+    }
+    window.location.href = 'client-dashboard.html';
+    return false;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Dashboard — Management Pro Liberia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="portal.css">
+<style>
+  .empty-state{ padding:40px 24px; text-align:center; color:var(--ink-soft); font-size:14px; }
+  .empty-state strong{ display:block; color:var(--navy); font-family:'Fraunces',serif; font-size:18px; margin-bottom:8px; font-weight:600; }
+</style>
+</head>
+<body>
+
+<div class="portal">
+  <aside class="portal-sidebar">
+    <a href="../management-pro-liberia.html" class="brand">
+      <img src="mpl-logo.png" alt="" onerror="this.style.display='none'">
+      <div class="brand-text">Management Pro Liberia<span>Client Portal</span></div>
+    </a>
+
+    <nav class="portal-nav">
+      <a href="#overview" class="nav-link active" data-section="overview">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="3" width="8" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="11" width="8" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
+        Overview
+      </a>
+      <a href="#properties" class="nav-link" data-section="properties">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 21V10l8-6 8 6v11" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 21v-7h6v7" stroke="currentColor" stroke-width="1.6"/></svg>
+        My Properties
+      </a>
+      <a href="#reports" class="nav-link" data-section="reports">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l5 5v13H6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12h6M9 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Reports &amp; Financials
+      </a>
+      <a href="#maintenance" class="nav-link" data-section="maintenance">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a3 3 0 0 1-4 4L5 16l3 3 5.7-5.7a3 3 0 0 1 4-4l-2-2-1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Maintenance Logs
+      </a>
+      <a href="#gps" class="nav-link" data-section="gps">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg>
+        GPS Verification
+      </a>
+      <a href="#account" class="nav-link" data-section="account">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20c1.4-3.8 4.2-5.7 7.5-5.7s6.1 1.9 7.5 5.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Account
+      </a>
+    </nav>
+
+    <div class="portal-sidebar-footer">
+      <div class="portal-user">
+        <div class="avatar" id="user-initials">--</div>
+        <div class="who"><strong id="user-name">Loading…</strong><span id="user-sub">&nbsp;</span></div>
+      </div>
+      <a href="#" class="portal-logout" onclick="doLogout(); return false;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Sign out
+      </a>
+    </div>
+  </aside>
+
+  <main class="portal-main">
+
+    <!-- OVERVIEW -->
+    <section class="portal-section active" id="sec-overview">
+      <div class="portal-topbar">
+        <div>
+          <h1 id="welcome-heading">Welcome back</h1>
+          <p>Here's what's happening across your properties this month.</p>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="label">Properties</div><div class="value" id="stat-properties">–</div></div>
+        <div class="stat-card"><div class="label">Last Verified Visit</div><div class="value" id="stat-last-visit">–</div></div>
+        <div class="stat-card"><div class="label">Latest Rent Collected</div><div class="value mono" id="stat-rent">–</div></div>
+        <div class="stat-card"><div class="label">Open Maintenance Items</div><div class="value" id="stat-maint">–</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Recent field activity</h3><p>The latest GPS-verified visits from our team</p></div>
+          <a href="#gps" class="btn-sm nav-link" data-section="gps">View map</a>
+        </div>
+        <table class="data">
+          <thead><tr><th>Property</th><th>Activity</th><th>Verified by</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="activity-body"><tr><td colspan="5" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PROPERTIES -->
+    <section class="portal-section" id="sec-properties">
+      <div class="portal-topbar">
+        <div><h1>My Properties</h1><p>Properties under MPL management on your behalf.</p></div>
+      </div>
+      <div class="panel">
+        <div class="panel-body" style="padding:0;">
+          <table class="data">
+            <thead><tr><th>Property</th><th>Type</th><th>Location</th><th>Last Inspection</th><th>Status</th><th></th></tr></thead>
+            <tbody id="properties-body"><tr><td colspan="6" class="empty-state">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORTS & FINANCIALS -->
+    <section class="portal-section" id="sec-reports">
+      <div class="portal-topbar">
+        <div><h1>Reports &amp; Financials</h1><p>Monthly statements for your properties.</p></div>
+      </div>
+      <div id="financials-container"></div>
+      <div class="panel">
+        <div class="panel-head"><div><h3>Monthly reports</h3><p>Download past statements and inspection summaries</p></div></div>
+        <table class="data">
+          <thead><tr><th>Report</th><th>Property</th><th>Period</th><th></th></tr></thead>
+          <tbody id="reports-body"><tr><td colspan="4" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MAINTENANCE -->
+    <section class="portal-section" id="sec-maintenance">
+      <div class="portal-topbar">
+        <div><h1>Maintenance Logs</h1><p>Repairs and upkeep tracked across your properties.</p></div>
+      </div>
+      <div class="panel"><div class="panel-body" id="maintenance-body">Loading…</div></div>
+    </section>
+
+    <!-- GPS -->
+    <section class="portal-section" id="sec-gps">
+      <div class="portal-topbar">
+        <div><h1>GPS Verification</h1><p>Every visit is logged with the coordinates and time our team arrived on site.</p></div>
+      </div>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="map-wrap" id="map"></div>
+          <div class="map-legend">
+            <span><i style="background:#4B7A63"></i> Verified inspection</span>
+            <span><i style="background:#BE984F"></i> Your property</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3>Verification history</h3></div></div>
+        <table class="data">
+          <thead><tr><th>Property</th><th>Coordinates</th><th>Arrived</th><th>Team member</th></tr></thead>
+          <tbody id="checkins-body"><tr><td colspan="4" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ACCOUNT -->
+    <section class="portal-section" id="sec-account">
+      <div class="portal-topbar"><div><h1>Account</h1><p>Your contact details on file with MPL.</p></div></div>
+      <div class="panel"><div class="panel-body" id="account-body">Loading…</div></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="portal-data.js"></script>
+<script>
+  const links = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('.portal-section');
+  let map, session, myProperties = [];
+
+  function showSection(name){
+    sections.forEach(s => s.classList.toggle('active', s.id === 'sec-' + name));
+    links.forEach(l => l.classList.toggle('active', l.dataset.section === name));
+    if(name === 'gps' && map) setTimeout(() => map.invalidateSize(), 50);
+  }
+  links.forEach(l => l.addEventListener('click', (e) => {
+    e.preventDefault();
+    showSection(l.dataset.section);
+    history.replaceState(null, '', '#' + l.dataset.section);
+  }));
+
+  function statusBadge(status){
+    return status === 'verified'
+      ? '<span class="badge verified">Verified</span>'
+      : '<span class="badge pending">Due for visit</span>';
+  }
+  function maintBadge(status){
+    const map = { resolved:['Resolved','verified'], in_progress:['In Progress','pending'], awaiting_approval:['Awaiting Approval','pending'] };
+    const [label, cls] = map[status] || [status, 'pending'];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+  function fmtDate(d){
+    return new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
+  function fmtDateTime(d){
+    return new Date(d).toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' });
+  }
+  function money(n){ return '$' + Number(n).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+  async function doLogout(){ await clearSession(); window.location.href = 'login.html'; }
+
+  async function init(){
+    session = await requireSession('client');
+    if(!session) return;
+
+    const user = await getUserByEmail(session.email);
+    const initials = (user.name || session.email).split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    document.getElementById('user-initials').textContent = initials;
+    document.getElementById('user-name').textContent = user.name;
+    document.getElementById('user-sub').textContent = user.location ? `Diaspora client · ${user.location}` : 'MPL client';
+    document.getElementById('welcome-heading').textContent = `Welcome back, ${user.name.split(' ')[0]}`;
+
+    myProperties = await getClientProperties(session.email);
+    const propIds = myProperties.map(p => p.id);
+    const maintenance = await getMaintenanceFor(propIds);
+    const checkins = await getCheckinsFor(propIds);
+    const financials = await getFinancialsFor(propIds);
+    const reports = await getReportsFor(propIds);
+    const propName = id => (myProperties.find(p=>p.id===id) || {}).name || id;
+
+    // ---- Empty state (new signup, no properties yet) ----
+    if(myProperties.length === 0){
+      document.getElementById('activity-body').innerHTML = `<tr><td colspan="5" class="empty-state"><strong>No properties yet</strong>Our team will attach your properties to this account after your onboarding call.</td></tr>`;
+      document.getElementById('properties-body').innerHTML = `<tr><td colspan="6" class="empty-state"><strong>Nothing here yet</strong>Once MPL takes on a property for you, it'll show up here automatically.</td></tr>`;
+      document.getElementById('reports-body').innerHTML = `<tr><td colspan="4" class="empty-state">No reports yet.</td></tr>`;
+      document.getElementById('maintenance-body').innerHTML = `<div class="empty-state">No maintenance activity yet.</div>`;
+      document.getElementById('checkins-body').innerHTML = `<tr><td colspan="4" class="empty-state">No verified visits yet.</td></tr>`;
+      document.getElementById('stat-properties').textContent = '0';
+      document.getElementById('stat-last-visit').textContent = '—';
+      document.getElementById('stat-rent').textContent = '—';
+      document.getElementById('stat-maint').textContent = '0';
+    } else {
+      // ---- Stats ----
+      document.getElementById('stat-properties').textContent = myProperties.length;
+      if(checkins.length){
+        const days = Math.max(0, Math.round((Date.now() - new Date(checkins[0].time)) / 86400000));
+        document.getElementById('stat-last-visit').innerHTML = `${days}<small> day${days===1?'':'s'} ago</small>`;
+      } else {
+        document.getElementById('stat-last-visit').textContent = '—';
+      }
+      const latestFin = financials.sort((a,b)=> b.period.localeCompare(a.period))[0];
+      document.getElementById('stat-rent').textContent = latestFin ? money(latestFin.rentCollected) : '—';
+      const openMaint = maintenance.filter(m => m.status !== 'resolved').length;
+      document.getElementById('stat-maint').textContent = openMaint;
+
+      // ---- Recent activity ----
+      document.getElementById('activity-body').innerHTML = checkins.slice(0,5).map(c => `
+        <tr><td>${propName(c.propertyId)}</td><td>${c.note}</td><td>${c.teamMember}</td><td class="mono">${fmtDate(c.time)}</td><td><span class="badge verified">GPS Verified</span></td></tr>
+      `).join('') || `<tr><td colspan="5" class="empty-state">No activity yet.</td></tr>`;
+
+      // ---- Properties table ----
+      document.getElementById('properties-body').innerHTML = myProperties.map(p => `
+        <tr>
+          <td><strong>${p.name}</strong></td><td>${p.type}</td><td>${p.address}</td>
+          <td class="mono">${fmtDate(p.lastInspection)}</td><td>${statusBadge(p.status)}</td>
+          <td><a href="#gps" class="btn-sm nav-link" data-section="gps">View on map</a></td>
+        </tr>`).join('');
+
+      // ---- Financials ----
+      document.getElementById('financials-container').innerHTML = financials.map(f => `
+        <div class="panel">
+          <div class="panel-head"><div><h3>${f.period} summary — ${propName(f.propertyId)}</h3><p>Rent collected on your behalf and remitted after expenses</p></div></div>
+          <div class="panel-body">
+            <div class="fin-row"><span>Rent collected</span><span class="amt pos">${money(f.rentCollected)}</span></div>
+            <div class="fin-row"><span>Property management fee</span><span class="amt neg">-${money(f.fee)}</span></div>
+            ${f.repairs ? `<div class="fin-row"><span>Repairs &amp; maintenance</span><span class="amt neg">-${money(f.repairs)}</span></div>` : ''}
+            <div class="fin-row"><span>Net remitted to you</span><span class="amt">${money(f.netRemitted)}</span></div>
+          </div>
+        </div>`).join('') || `<div class="panel"><div class="panel-body empty-state">No financial statements yet — this applies to rental properties once rent starts being collected.</div></div>`;
+
+      // ---- Reports ----
+      document.getElementById('reports-body').innerHTML = reports.map(r => `
+        <tr><td>${r.type}</td><td>${propName(r.propertyId)}</td><td class="mono">${r.period}</td><td><a href="#" class="btn-sm">Download PDF</a></td></tr>
+      `).join('') || `<tr><td colspan="4" class="empty-state">No reports yet.</td></tr>`;
+
+      // ---- Maintenance ----
+      const iconSvg = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a3 3 0 0 1-4 4L5 16l3 3 5.7-5.7a3 3 0 0 1 4-4l-2-2-1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+      document.getElementById('maintenance-body').innerHTML = maintenance.map(m => `
+        <div class="maint-item">
+          <div class="maint-icon">${iconSvg}</div>
+          <div class="maint-body"><h4>${m.title}</h4><p>${m.description}</p></div>
+          <div class="maint-meta"><div class="date">${propName(m.propertyId)}</div>${maintBadge(m.status)}</div>
+        </div>`).join('') || `<div class="empty-state">No maintenance activity yet.</div>`;
+
+      // ---- Checkins table ----
+      document.getElementById('checkins-body').innerHTML = checkins.map(c => `
+        <tr><td>${propName(c.propertyId)}</td><td class="mono">${c.lat.toFixed(4)}°N, ${Math.abs(c.lng).toFixed(4)}°W</td><td class="mono">${fmtDateTime(c.time)}</td><td>${c.teamMember}</td></tr>
+      `).join('') || `<tr><td colspan="4" class="empty-state">No verified visits yet.</td></tr>`;
+    }
+
+    // ---- Account ----
+    document.getElementById('account-body').innerHTML = `
+      <div class="fin-row"><span>Name</span><span>${user.name}</span></div>
+      <div class="fin-row"><span>Email</span><span>${user.email}</span></div>
+      <div class="fin-row"><span>Phone</span><span class="mono">${user.phone || '—'}</span></div>
+      <div class="fin-row"><span>Properties managed</span><span>${myProperties.length}</span></div>
+    `;
+
+    // ---- Map ----
+    map = L.map('map', { scrollWheelZoom:false }).setView(
+      myProperties.length ? [myProperties[0].lat, myProperties[0].lng] : [6.28,-10.6],
+      myProperties.length ? 11 : 9
+    );
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'&copy; OpenStreetMap contributors', maxZoom:18
+    }).addTo(map);
+    const goldIcon = L.divIcon({ className:'', html:'<div style="width:16px;height:16px;border-radius:50%;background:#BE984F;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)"></div>', iconSize:[16,16], iconAnchor:[8,8] });
+    myProperties.forEach(p => {
+      const lastCheckin = checkins.find(c => c.propertyId === p.id);
+      L.marker([p.lat, p.lng], { icon: goldIcon }).addTo(map)
+        .bindPopup(`<h4>${p.name}</h4>${lastCheckin ? 'Last verified ' + fmtDateTime(lastCheckin.time) : 'No visits logged yet'}<br><span style="color:#4B7A63;font-weight:600;">${p.status === 'verified' ? 'GPS Verified' : 'Due for visit'}</span>`);
+    });
+
+    const initial = location.hash.replace('#','') || 'overview';
+    showSection(initial);
+  }
+
+  init();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Dashboard — Management Pro Liberia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="portal.css">
+<style>
+  .visit-row{ display:flex; align-items:center; gap:16px; padding:16px 0; border-bottom:1px solid var(--line); }
+  .visit-row:last-child{ border-bottom:none; }
+  .visit-time{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink-soft); width:74px; flex-shrink:0; }
+  .visit-info{ flex:1; }
+  .visit-info h4{ font-size:14.5px; font-family:'Inter',sans-serif; font-weight:600; color:var(--ink); }
+  .visit-info p{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .checkin-note{ font-size:12px; color:var(--ink-soft); margin-top:10px; }
+  .checkin-note.ok{ color:var(--verified); }
+  .checkin-note.err{ color:#9A3B2C; }
+</style>
+</head>
+<body>
+
+<div class="portal">
+  <aside class="portal-sidebar">
+    <a href="../management-pro-liberia.html" class="brand">
+      <img src="mpl-logo.png" alt="" onerror="this.style.display='none'">
+      <div class="brand-text">Management Pro Liberia<span>Team Portal</span></div>
+    </a>
+
+    <nav class="portal-nav">
+      <a href="#overview" class="nav-link active" data-section="overview">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="3" width="8" height="5" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="11" width="8" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
+        Overview
+      </a>
+      <a href="#properties" class="nav-link" data-section="properties">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 21V10l8-6 8 6v11" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 21v-7h6v7" stroke="currentColor" stroke-width="1.6"/></svg>
+        All Properties
+      </a>
+      <a href="#checkin" class="nav-link" data-section="checkin">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg>
+        GPS Check-In
+      </a>
+      <a href="#maintenance" class="nav-link" data-section="maintenance">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a3 3 0 0 1-4 4L5 16l3 3 5.7-5.7a3 3 0 0 1 4-4l-2-2-1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Maintenance
+      </a>
+      <a href="#map" class="nav-link" data-section="map">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 4 3 6.5v14L9 18l6 2.5 6-2.5v-14L15 6.5 9 4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 4v14M15 6.5v14" stroke="currentColor" stroke-width="1.6"/></svg>
+        Coverage Map
+      </a>
+    </nav>
+
+    <div class="portal-sidebar-footer">
+      <div class="portal-user">
+        <div class="avatar" id="user-initials">--</div>
+        <div class="who"><strong id="user-name">Loading…</strong><span id="user-sub">&nbsp;</span></div>
+      </div>
+      <a href="#" class="portal-logout" onclick="doLogout(); return false;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Sign out
+      </a>
+    </div>
+  </aside>
+
+  <main class="portal-main">
+
+    <!-- OVERVIEW -->
+    <section class="portal-section active" id="sec-overview">
+      <div class="portal-topbar"><div><h1 id="welcome-heading">Good morning</h1><p>Here's the property portfolio and current status.</p></div></div>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="label">Properties Managed</div><div class="value" id="stat-total">–</div></div>
+        <div class="stat-card"><div class="label">Verified</div><div class="value" id="stat-verified">–</div></div>
+        <div class="stat-card"><div class="label">Due for Visit</div><div class="value" id="stat-pending">–</div></div>
+        <div class="stat-card"><div class="label">Open Maintenance</div><div class="value" id="stat-maint">–</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><div><h3>Properties due for a visit</h3><p>Not yet checked in — head to GPS Check-In once you're on site</p></div>
+          <a href="#checkin" class="btn-sm primary nav-link" data-section="checkin">Go to check-in</a>
+        </div>
+        <div class="panel-body" id="due-list">Loading…</div>
+      </div>
+    </section>
+
+    <!-- ALL PROPERTIES -->
+    <section class="portal-section" id="sec-properties">
+      <div class="portal-topbar"><div><h1>All Properties</h1><p>Every property currently under MPL management, across all clients.</p></div></div>
+      <div class="panel">
+        <div class="panel-body" style="padding:0;">
+          <table class="data">
+            <thead><tr><th>Property</th><th>Client</th><th>Type</th><th>Last Inspection</th><th>Status</th></tr></thead>
+            <tbody id="properties-body"><tr><td colspan="5" class="empty-state">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHECK-IN -->
+    <section class="portal-section" id="sec-checkin">
+      <div class="portal-topbar"><div><h1>GPS Check-In</h1><p>Log your arrival at a property. This timestamps and pins your coordinates, and updates the client's dashboard immediately.</p></div></div>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="field">
+            <label for="ci-property">Property</label>
+            <select id="ci-property" style="width:100%; border:1px solid var(--line); border-radius:4px; padding:12px 14px; font-size:14.5px; font-family:'Inter',sans-serif; background:var(--paper);"></select>
+          </div>
+          <div class="field">
+            <label for="ci-note">Visit note</label>
+            <textarea id="ci-note" rows="3" placeholder="e.g. Routine inspection, no issues found" style="width:100%; border:1px solid var(--line); border-radius:4px; padding:12px 14px; font-size:14.5px; font-family:'Inter',sans-serif; resize:vertical;"></textarea>
+          </div>
+          <button class="btn-sm primary" style="padding:12px 20px; font-size:13.5px;" onclick="doCheckIn()">Capture GPS &amp; check in</button>
+          <div class="checkin-note" id="ci-status">Your browser will ask for location permission — coordinates are only captured at the moment you check in.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAINTENANCE -->
+    <section class="portal-section" id="sec-maintenance">
+      <div class="portal-topbar"><div><h1>Maintenance</h1><p>Open items across all properties. Mark resolved once work is confirmed complete.</p></div></div>
+      <div class="panel"><div class="panel-body" id="maintenance-body">Loading…</div></div>
+    </section>
+
+    <!-- COVERAGE MAP -->
+    <section class="portal-section" id="sec-map">
+      <div class="portal-topbar"><div><h1>Coverage Map</h1><p>All managed properties and their verification status.</p></div></div>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="map-wrap" id="teammap"></div>
+          <div class="map-legend">
+            <span><i style="background:#4B7A63"></i> Verified</span>
+            <span><i style="background:#A9762F"></i> Due for visit</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="portal-data.js"></script>
+<script>
+  const links = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('.portal-section');
+  let teamMap, allProperties = [], session;
+
+  function showSection(name){
+    sections.forEach(s => s.classList.toggle('active', s.id === 'sec-' + name));
+    links.forEach(l => l.classList.toggle('active', l.dataset.section === name));
+    if(name === 'map' && teamMap) setTimeout(() => teamMap.invalidateSize(), 50);
+  }
+  links.forEach(l => l.addEventListener('click', (e) => {
+    e.preventDefault();
+    showSection(l.dataset.section);
+    history.replaceState(null, '', '#' + l.dataset.section);
+  }));
+
+  function statusBadge(status){
+    return status === 'verified' ? '<span class="badge verified">Verified</span>' : '<span class="badge pending">Due for visit</span>';
+  }
+  function maintBadge(status){
+    const m = { resolved:['Resolved','verified'], in_progress:['In Progress','pending'], awaiting_approval:['Awaiting Approval','pending'] };
+    const [label, cls] = m[status] || [status, 'pending'];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+  function fmtDate(d){ return new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+
+  async function doLogout(){ await clearSession(); window.location.href = 'login.html'; }
+
+  function pinIcon(color){
+    return L.divIcon({ className:'', html:`<div style="width:15px;height:15px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)"></div>`, iconSize:[15,15], iconAnchor:[7,7] });
+  }
+
+  async function loadAll(){
+    allProperties = await getAllProperties();
+    const users = {};
+    // client name lookups
+    for(const p of allProperties){
+      if(!users[p.clientEmail]) users[p.clientEmail] = await getUserByEmail(p.clientEmail);
+    }
+
+    document.getElementById('stat-total').textContent = allProperties.length;
+    document.getElementById('stat-verified').textContent = allProperties.filter(p=>p.status==='verified').length;
+    document.getElementById('stat-pending').textContent = allProperties.filter(p=>p.status!=='verified').length;
+
+    const maintenance = await getMaintenanceFor(allProperties.map(p=>p.id));
+    document.getElementById('stat-maint').textContent = maintenance.filter(m=>m.status!=='resolved').length;
+
+    const propName = id => (allProperties.find(p=>p.id===id) || {}).name || id;
+    const clientName = email => (users[email] || {}).name || email;
+
+    // Due list
+    const due = allProperties.filter(p => p.status !== 'verified');
+    document.getElementById('due-list').innerHTML = due.length ? due.map(p => `
+      <div class="visit-row">
+        <div class="visit-time mono">${fmtDate(p.lastInspection)}</div>
+        <div class="visit-info"><h4>${p.name}</h4><p>${p.type} — client ${clientName(p.clientEmail)}</p></div>
+        <span class="badge pending">Not yet visited</span>
+      </div>`).join('') : `<div class="empty-state">Everything is checked in — nice work.</div>`;
+
+    // Properties table
+    document.getElementById('properties-body').innerHTML = allProperties.map(p => `
+      <tr><td><strong>${p.name}</strong></td><td>${clientName(p.clientEmail)}</td><td>${p.type}</td><td class="mono">${fmtDate(p.lastInspection)}</td><td>${statusBadge(p.status)}</td></tr>
+    `).join('');
+
+    // Check-in select
+    document.getElementById('ci-property').innerHTML = allProperties.map(p => `<option value="${p.id}">${p.name} — ${clientName(p.clientEmail)}</option>`).join('');
+
+    // Maintenance list
+    const iconSvg = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a3 3 0 0 1-4 4L5 16l3 3 5.7-5.7a3 3 0 0 1 4-4l-2-2-1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+    document.getElementById('maintenance-body').innerHTML = maintenance.map(m => `
+      <div class="maint-item">
+        <div class="maint-icon">${iconSvg}</div>
+        <div class="maint-body"><h4>${m.title}</h4><p>${m.description} — <em>${propName(m.propertyId)}</em></p></div>
+        <div class="maint-meta">
+          ${maintBadge(m.status)}
+          ${m.status !== 'resolved' ? `<div style="margin-top:8px;"><button class="btn-sm" onclick="resolveMaint('${m.id}')">Mark resolved</button></div>` : ''}
+        </div>
+      </div>`).join('') || `<div class="empty-state">No open maintenance items.</div>`;
+
+    // Coverage map
+    if(teamMap){ teamMap.remove(); }
+    teamMap = L.map('teammap', { scrollWheelZoom:false }).setView([6.28, -10.55], 9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap contributors', maxZoom:18 }).addTo(teamMap);
+    allProperties.forEach(p => {
+      L.marker([p.lat, p.lng], { icon: pinIcon(p.status === 'verified' ? '#4B7A63' : '#A9762F') }).addTo(teamMap)
+        .bindPopup(`<h4>${p.name}</h4>${p.status === 'verified' ? 'Verified · ' + fmtDate(p.lastInspection) : 'Due for visit'}`);
+    });
+  }
+
+  async function resolveMaint(id){
+    await updateMaintenanceStatus(id, 'resolved');
+    loadAll();
+  }
+
+  async function doCheckIn(){
+    const statusEl = document.getElementById('ci-status');
+    const propertyId = document.getElementById('ci-property').value;
+    const note = document.getElementById('ci-note').value.trim();
+    statusEl.classList.remove('ok','err');
+    statusEl.textContent = 'Locating…';
+
+    if(!navigator.geolocation){
+      statusEl.classList.add('err');
+      statusEl.textContent = "Location isn't available in this browser — coordinates can be entered manually on the paper log.";
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const entry = await recordCheckin({ propertyId, lat, lng, teamMember: session.name, note });
+        statusEl.classList.add('ok');
+        statusEl.textContent = `Checked in at ${lat.toFixed(4)}°, ${lng.toFixed(4)}° — logged just now. The client's dashboard now shows this visit.`;
+        document.getElementById('ci-note').value = '';
+        loadAll();
+      },
+      () => {
+        statusEl.classList.add('err');
+        statusEl.textContent = 'Location permission was denied — check-in needs GPS access to verify your visit.';
+      },
+      { enableHighAccuracy:true, timeout:8000 }
+    );
+  }
+
+  async function init(){
+    session = await requireSession('team');
+    if(!session) return;
+    document.getElementById('user-initials').textContent = session.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    document.getElementById('user-name').textContent = session.name;
+    document.getElementById('user-sub').textContent = 'Field Inspector';
+    document.getElementById('welcome-heading').textContent = `Good to see you, ${session.name.split(' ')[0]}`;
+
+    await loadAll();
+    showSection(location.hash.replace('#','') || 'overview');
+  }
+
+  init();
+</script>
+
+</body>
+</html>
